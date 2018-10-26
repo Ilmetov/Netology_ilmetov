@@ -37,6 +37,7 @@ order by avg_rating DESC, r.movieid asc limit 150)
 select tr.movieid, k.tags as top_rated_tags into top_rated_tags from top_rated tr
 join public.keywords k on k.movieid = tr.movieid ;
 
+--select * from public.top_rated_tags ;
 
 -- выгрузка данных
 --"ВАША КОМАНДА ВЫГРУЗКИ ТАБЛИЦЫ В ФАЙЛ"
