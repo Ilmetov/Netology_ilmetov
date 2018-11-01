@@ -23,11 +23,74 @@ select * from public.user_movies_agg;
 -- Функциия возвращает массив, который представляет собой пересечение контента из обоих списков.
 -- Примечание - по именам к аргументам обращаться не получится, придётся делать через $1 и $2.
 
-CREATE OR REPLACE FUNCTION cross_arr (int[], int[])
- RETURNS int[] language sql as
+CREATE OR REPLACE FUNCTION cross_arr (bigint[], bigint[])
+ RETURNS bigint[] language sql as
  $FUNCTION$ select array(Select $1 INTERSECT select $2); $FUNCTION$;
 
 -- Сформируйте запрос следующего вида: достать из таблицы всевозможные наборы u1, r1, u2, r2.
 -- u1 и u2 - это id пользователей, r1 и r2 - соответствующие массивы рейтингов
 -- ПОДСКАЗКА: используйте CROSS JOIN
-SELECT agg.userId as u1, agg.userId as u2, agg.array_agg as ar1, agg.array_agg as ar2 from user_movies_agg as agg
+;
+
+-- Оберните запрос в CTE и примените к парам <ar1, ar2> функцию CROSS_ARR, которую вы создали
+-- вы получите триплеты u1, u2, crossed_arr
+-- созхраните результат в таблицу common_user_views
+with cross_rating as(SELECT
+agg1.userid as u1,
+agg2.userid as u2,
+agg1.user_views as ar1,
+agg2.user_views as ar2
+from user_movies_agg as agg1
+cross join user_movies_agg as agg2)
+select u1, u2, cross_arr(ar1,ar2) from cross_rating where u1 = 3 limit 1000 ;
+
+--пробуем вставить с использованием with - фиаско
+DROP TABLE IF EXISTS common_user_views;
+WITH cross_rating as (
+SELECT
+agg1.userid as u1,
+agg2.userid as u2,
+agg1.user_views as ar1,
+agg2.user_views as ar2
+from user_movies_agg as agg1
+cross join user_movies_agg as agg2
+)select u1, u2, cross_arr(ar1,ar2) as ar_cross INTO public.common_user_views FROM cross_rating;
+
+
+--пробуем без with - тот же результат, только запрос сам подольше работает
+
+SELECT
+agg1.userid as u1,
+agg2.userid as u2,
+agg1.user_views as ar1,
+agg2.user_views as ar2,
+cross_arr(agg1.user_views,agg2.user_views) as ar_cross
+INTO public.common_user_views
+from user_movies_agg as agg1
+cross join user_movies_agg as agg2;
+/*
+SELECT
+count(*)
+from user_movies_agg as agg1
+cross join user_movies_agg as agg2 ;
+63 297 936 */
+
+-- Создайте по аналогии с cross_arr функцию diff_arr, которая вычитает один массив из другого.
+-- Подсказка: используйте оператор SQL EXCEPT.
+CREATE OR REPLACE FUNCTION diff_arr (bigint[], bigint[])
+ RETURNS bigint[] language sql as
+ $FUNCTION$ select array(Select $1 EXCEPT select $2); $FUNCTION$;
+
+
+
+-- Сформируйте рекомендации - для каждой пары посоветуйте для u1 контент, который видел u2, но не видел u1 (в виде массива).
+-- Подсказка: нужно заджойнить user_movies_agg и common_user_views и применить вашу функцию diff_arr к соответствующим полям.
+-- с векторами фильмов
+--тут не понял, почему в подсказке был cross join? по идее у нас уже есть cross. т.е. оптимальнее наверное
+--было положить в common_user_views сразу и id обоих юзеров и пересечение, и каждый массив отдельно
+SELECT cuv.u1, cuv.u2, diff_arr (uma.user_views, cuv.ar_cross)
+FROM common_user_views cuv JOIN user_movies_agg uma on cuv.u2 = uma.userid LIMIT 10;
+
+--или если положить всё в одну таблицу
+SELECT cuv.u1, cuv.u2, diff_arr (cuv.ur2, cuv.ar_cross)
+FROM common_user_views cuv LIMIT 10;
