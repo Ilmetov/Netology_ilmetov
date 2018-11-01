@@ -30,7 +30,9 @@ order by AVG(rating) desc limit 10 ;
 --4.1 Подзапросы: достать 10 imbdId из links у которых средний рейтинг больше 3.5. 
 --Нужно подсчитать средний рейтинг по все пользователям, которые попали под условие - то есть в ответе должно быть одно число.
 
-select l.imdbid from public.links l where l.movieid in (select r.movieid from public.ratings r group by r.movieid having AVG(r.rating)>3.5) limit 10;
+select l.imdbid from public.links l
+where l.movieid in
+(select r.movieid from public.ratings r group by r.movieid having AVG(r.rating)>3.5) limit 10;
 
 --4.2 Common Table Expressions: посчитать средний рейтинг по пользователям, у которых более 10 оценок
 
