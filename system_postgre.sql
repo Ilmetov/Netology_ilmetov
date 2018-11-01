@@ -26,3 +26,11 @@ INSERT INTO holiday_picnic VALUES
 select array_ndims(side) from holiday_picnic ;
 
 select * from information_schema.tables ;
+
+
+SELECT pg_size_pretty(SUM(pg_column_size(userId))) FROM ratings;
+SELECT
+   relname as "Table",
+   pg_size_pretty(pg_total_relation_size(relid)) As "Size",
+   pg_size_pretty(pg_total_relation_size(relid) - pg_relation_size(relid)) as "External Size"
+   FROM pg_catalog.pg_statio_user_tables ORDER BY pg_total_relation_size(relid) DESC;
