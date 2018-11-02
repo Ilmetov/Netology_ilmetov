@@ -12,12 +12,15 @@ FROM information_schema.tables tt where tt.table_catalog = 'postgres' order by 2
 SELECT userID, array_agg(movieId) as user_views FROM ratings group by userID;
 
 -- таблица user_movies_agg, в которую сохраните результат предыдущего запроса
+select userid,movieid,rating,"timestamp" INTO public.small_ratings from (SELECT * FROM ratings LIMIT 10000) as t;
+
+--select count(*) from small_ratings;
 
 DROP TABLE IF EXISTS user_movies_agg;
 SELECT userID, user_views INTO public.user_movies_agg FROM
-(SELECT userID, array_agg(movieId) as user_views FROM ratings group by userID) as uw;
+(SELECT userID, array_agg(movieid) as user_views FROM small_ratings group by userID) as t;
 
-select * from public.user_movies_agg;
+select count(*) from public.user_movies_agg;
 
 -- Используя следующий синтаксис, создайте функцию cross_arr оторая принимает на вход два массива arr1 и arr2.
 -- Функциия возвращает массив, который представляет собой пересечение контента из обоих списков.
@@ -42,9 +45,9 @@ agg1.user_views as ar1,
 agg2.user_views as ar2
 from user_movies_agg as agg1
 cross join user_movies_agg as agg2)
-select u1, u2, cross_arr(ar1,ar2) from cross_rating where u1 = 3 limit 1000 ;
+select u1, u2, cross_arr(ar1,ar2) from cross_rating;
 
---пробуем вставить с использованием with - фиаско
+--пробуем вставить с использованием with
 DROP TABLE IF EXISTS common_user_views;
 WITH cross_rating as (
 SELECT
@@ -56,18 +59,8 @@ from user_movies_agg as agg1
 cross join user_movies_agg as agg2
 )select u1, u2, cross_arr(ar1,ar2) as ar_cross INTO public.common_user_views FROM cross_rating;
 
+select * from public.common_user_views;
 
---пробуем без with - тот же результат, только запрос сам подольше работает
-
-SELECT
-agg1.userid as u1,
-agg2.userid as u2,
-agg1.user_views as ar1,
-agg2.user_views as ar2,
-cross_arr(agg1.user_views,agg2.user_views) as ar_cross
-INTO public.common_user_views
-from user_movies_agg as agg1
-cross join user_movies_agg as agg2;
 /*
 SELECT
 count(*)
@@ -88,6 +81,7 @@ CREATE OR REPLACE FUNCTION diff_arr (bigint[], bigint[])
 -- с векторами фильмов
 --тут не понял, почему в подсказке был cross join? по идее у нас уже есть cross. т.е. оптимальнее наверное
 --было положить в common_user_views сразу и id обоих юзеров и пересечение, и каждый массив отдельно
+--либо просто join
 SELECT cuv.u1, cuv.u2, diff_arr (uma.user_views, cuv.ar_cross)
 FROM common_user_views cuv JOIN user_movies_agg uma on cuv.u2 = uma.userid LIMIT 10;
 
