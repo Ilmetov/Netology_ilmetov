@@ -9,10 +9,4 @@
 # - используя группировку данных ($groupby) вывести top-3 самых распространённых тегов
 /usr/bin/mongo $APP_MONGO_HOST:$APP_MONGO_PORT/movies /home/agg.js
 
->use movies
-> db.tags.count()
-
-> db.tags.find({"name": "woman"})
-
->db.tags.aggregate([{$group: {_id: "$name", tag_count: { $sum: 1 }}},{ $sort: { "tag_count": -1 } }, {$limit: 3}])
-
+use movies
