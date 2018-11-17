@@ -38,21 +38,21 @@ insert into employee values
 */
 --selecting
 --2.1
---Вывести список названий департаментов и количество главных врачей в каждом из этих департаментов
+--Р’С‹РІРµСЃС‚Рё СЃРїРёСЃРѕРє РЅР°Р·РІР°РЅРёР№ РґРµРїР°СЂС‚Р°РјРµРЅС‚РѕРІ Рё РєРѕР»РёС‡РµСЃС‚РІРѕ РіР»Р°РІРЅС‹С… РІСЂР°С‡РµР№ РІ РєР°Р¶РґРѕРј РёР· СЌС‚РёС… РґРµРїР°СЂС‚Р°РјРµРЅС‚РѕРІ
 select d."name", count(distinct chief.id) from employee e 
 join department d on e.department_id = d.id
 join employee chief on e.chief_doc_id = chief.id
 group by 1;
 
 --2.2.
---Вывести список департамент id в которых работаю 3 и более сотрудника
+--Р’С‹РІРµСЃС‚Рё СЃРїРёСЃРѕРє РґРµРїР°СЂС‚Р°РјРµРЅС‚ id РІ РєРѕС‚РѕСЂС‹С… СЂР°Р±РѕС‚Р°СЋ 3 Рё Р±РѕР»РµРµ СЃРѕС‚СЂСѓРґРЅРёРєР°
 select d."name" from department d
 join employee e on d.id = e.department_id 
 group by d."name"
 having count (e.id) >= 3 ;
 
 --2.3
---Вывести список департамент id с максимальным количеством публикаций
+--Р’С‹РІРµСЃС‚Рё СЃРїРёСЃРѕРє РґРµРїР°СЂС‚Р°РјРµРЅС‚ id СЃ РјР°РєСЃРёРјР°Р»СЊРЅС‹Рј РєРѕР»РёС‡РµСЃС‚РІРѕРј РїСѓР±Р»РёРєР°С†РёР№
 with pub as (
 select d.id, sum(e.num_public) sum_pub, max(sum(num_public)) over () as max_pub
 from department d
@@ -63,15 +63,15 @@ select id from pub where sum_pub = max_pub
 ;
 
 --2.4
---Вывести список имен сотрудников + департамент с минимальным количеством публикаций в своем департаментe
+--Р’С‹РІРµСЃС‚Рё СЃРїРёСЃРѕРє РёРјРµРЅ СЃРѕС‚СЂСѓРґРЅРёРєРѕРІ + РґРµРїР°СЂС‚Р°РјРµРЅС‚ СЃ РјРёРЅРёРјР°Р»СЊРЅС‹Рј РєРѕР»РёС‡РµСЃС‚РІРѕРј РїСѓР±Р»РёРєР°С†РёР№ РІ СЃРІРѕРµРј РґРµРїР°СЂС‚Р°РјРµРЅС‚e
 with min_pub as(
 select e."name" as e_name, d."name" as d_name, e.num_public as num_pub, min(e.num_public) over (partition by d."name") as min_pub from department d
 join employee e on d.id = e.department_id )
 select e_name, d_name, num_pub from min_pub where min_pub.num_pub = min_pub ;
 
 --2.5
---Вывести список названий департаментов и среднее количество публикаций для тех департаментов, в которых
---работает более одного главного врача
+--Р’С‹РІРµСЃС‚Рё СЃРїРёСЃРѕРє РЅР°Р·РІР°РЅРёР№ РґРµРїР°СЂС‚Р°РјРµРЅС‚РѕРІ Рё СЃСЂРµРґРЅРµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РїСѓР±Р»РёРєР°С†РёР№ РґР»СЏ С‚РµС… РґРµРїР°СЂС‚Р°РјРµРЅС‚РѕРІ, РІ РєРѕС‚РѕСЂС‹С…
+--СЂР°Р±РѕС‚Р°РµС‚ Р±РѕР»РµРµ РѕРґРЅРѕРіРѕ РіР»Р°РІРЅРѕРіРѕ РІСЂР°С‡Р°
 
 select d."name" as d_name,  count( distinct e.chief_doc_id )as chief, avg(e.num_public) from department d
 join employee e on d.id = e.department_id
