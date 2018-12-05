@@ -67,7 +67,3 @@ class Rate:
     def usd(self):
         """Возвращает курс доллара на сегодня в формате self.format"""
         return self.make_format('USD')
-
-    def amd(self):
-        """Возвращает курс доллара на сегодня в формате self.format"""
-        return self.make_format('AMD')
