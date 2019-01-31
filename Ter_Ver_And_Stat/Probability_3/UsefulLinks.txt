@@ -1,0 +1,4 @@
+https://gallery.shinyapps.io/dist_calc/ (расчет p-value)
+https://habr.com/ru/company/stepic/blog/250527/ (ќсновы статистики: просто о сложных формулах)
+http://thinkcognitive.org/ru/blog/golova-professora-bambldorfa#.XEWlCHUzY5k (ƒоверительные интервалы)
+http://benalexkeen.com/comparative-statistics-in-python-using-scipy/ (Ttest в scipy)
